@@ -1,145 +1,209 @@
-import React, { useState, useEffect } from 'react';
-import { Calculator } from 'lucide-react';
-
-export default function RangeCalculator() {
-  const [input, setInput] = useState('');
-  const [rangeMultiplier, setRangeMultiplier] = useState(1);
-  
-  const COF = 0.105;
-  
-  const inputValue = parseFloat(input) || 0;
-  const sqrtValue = Math.sqrt(inputValue);
-  const sqrtSum = sqrtValue + COF;
-  const sqrValue = Math.pow(sqrtSum, 2);
-  const rangeValue = sqrValue - inputValue;
-  const adjustedRange = rangeValue * rangeMultiplier;
-
-  // SEO Meta Tags
-  useEffect(() => {
-    document.title = 'Range Calculator - Free Online Mathematical Range Calculation Tool';
-    
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute('content', 'Free online range calculator for mathematical computations. Calculate square roots, coefficients, and ranges instantly. Professional tool for engineers, students, and mathematicians.');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Range Calculator - Free Online Mathematical Range Calculation Tool</title>
+  <meta name="description" content="Free online range calculator for mathematical computations. Calculate square roots, coefficients, and ranges instantly.">
+  <meta name="keywords" content="range calculator, mathematical calculator, square root calculator, coefficient calculator, online math tool">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
     }
-  }, []);
-
-  const handleMultiply = () => {
-    setRangeMultiplier(prev => prev * 2);
-  };
-
-  const handleDivide = () => {
-    setRangeMultiplier(prev => prev / 2);
-  };
-
-  const handleReset = () => {
-    setRangeMultiplier(1);
-  };
-
-  const ResultRow = ({ label, value, showButtons = false }) => (
-    <div className="grid grid-cols-2 gap-4 items-center py-3 border-b border-gray-100 last:border-0">
-      <div className="text-sm font-medium text-gray-600">{label}</div>
-      <div className="flex items-center justify-end gap-2">
-        <span className="text-base font-semibold text-gray-900 tabular-nums">
-          {typeof value === 'number' ? value.toFixed(6) : value}
-        </span>
-        {showButtons && (
-          <div className="flex gap-1 ml-3">
-            <button
-              onClick={handleDivide}
-              className="px-2 py-1 text-xs bg-slate-600 hover:bg-slate-700 text-white rounded transition"
-              title="Divide by 2"
-            >
-              ÷2
-            </button>
-            <button
-              onClick={handleReset}
-              className="px-2 py-1 text-xs bg-slate-400 hover:bg-slate-500 text-white rounded transition"
-              title={`Reset (Current: ×${rangeMultiplier})`}
-            >
-              ×{rangeMultiplier}
-            </button>
-            <button
-              onClick={handleMultiply}
-              className="px-2 py-1 text-xs bg-slate-600 hover:bg-slate-700 text-white rounded transition"
-              title="Multiply by 2"
-            >
-              ×2
-            </button>
-          </div>
-        )}
+    .container { width: 100%; max-width: 42rem; }
+    .calculator-card {
+      background-color: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+      border: 1px solid #e2e8f0;
+    }
+    .header {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid #e2e8f0;
+      background-color: #1e293b;
+      border-radius: 0.5rem 0.5rem 0 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .header-icon { width: 1.25rem; height: 1.25rem; color: white; }
+    .header-title { font-size: 1.125rem; font-weight: 600; color: white; }
+    .content { padding: 1.5rem; }
+    .input-section { margin-bottom: 1.25rem; }
+    .input-label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: #64748b;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .input-field {
+      width: 100%;
+      padding: 0.625rem 1rem;
+      border-radius: 0.375rem;
+      border: 1px solid #cbd5e1;
+      font-size: 1rem;
+    }
+    .input-field:focus {
+      outline: none;
+      border-color: #64748b;
+      box-shadow: 0 0 0 3px rgba(100, 116, 139, 0.1);
+    }
+    .results-container {
+      background-color: #f8fafc;
+      border-radius: 0.375rem;
+      padding: 1rem;
+      border: 1px solid #e2e8f0;
+    }
+    .result-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      align-items: center;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .result-row:last-child { border-bottom: none; }
+    .result-label { font-size: 0.875rem; font-weight: 500; color: #64748b; }
+    .result-value-container {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0.5rem;
+    }
+    .result-value {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #0f172a;
+      font-variant-numeric: tabular-nums;
+    }
+    .button-group { display: flex; gap: 0.25rem; margin-left: 0.75rem; }
+    .btn {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+      color: white;
+      border: none;
+      border-radius: 0.25rem;
+      cursor: pointer;
+    }
+    .btn-primary { background-color: #475569; }
+    .btn-primary:hover { background-color: #334155; }
+    .btn-secondary { background-color: #94a3b8; }
+    .btn-secondary:hover { background-color: #64748b; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="calculator-card">
+      <div class="header">
+        <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="4" y="2" width="16" height="20" rx="2"></rect>
+        </svg>
+        <h1 class="header-title">Range Calculator</h1>
       </div>
-    </div>
-  );
-
-  return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-xl">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-          <div className="px-6 py-4 border-b border-gray-200 bg-slate-800">
-            <div className="flex items-center gap-2">
-              <Calculator className="w-5 h-5 text-white" />
-              <h1 className="text-lg font-semibold text-white">Range Calculator</h1>
+      <div class="content">
+        <div class="input-section">
+          <label class="input-label">Input Value</label>
+          <input type="number" id="inputValue" class="input-field" placeholder="Enter value">
+        </div>
+        <div class="results-container">
+          <div class="result-row">
+            <div class="result-label">1. Input</div>
+            <div class="result-value-container">
+              <span class="result-value" id="displayInput">0.000000</span>
             </div>
           </div>
-
-          <div className="p-6">
-            <div className="mb-5">
-              <label className="block text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">
-                Input Value
-              </label>
-              <input
-                type="number"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Enter value"
-                className="w-full px-4 py-2.5 rounded-md border border-gray-300 focus:border-slate-500 focus:ring-2 focus:ring-slate-200 focus:outline-none text-base"
-              />
+          <div class="result-row">
+            <div class="result-label">2. COF</div>
+            <div class="result-value-container">
+              <span class="result-value">0.105000</span>
             </div>
-
-            <div className="bg-slate-50 rounded-md p-4 border border-gray-200">
-              <ResultRow label="1. Input" value={inputValue} />
-              <ResultRow label="2. COF" value={COF} />
-              <ResultRow label="3. SQRT" value={sqrtValue} />
-              <ResultRow label="4. SQRT Sum" value={sqrtSum} />
-              <ResultRow label="5. SQR" value={sqrValue} />
-              <ResultRow label="6. Range" value={adjustedRange} showButtons={true} />
+          </div>
+          <div class="result-row">
+            <div class="result-label">3. SQRT</div>
+            <div class="result-value-container">
+              <span class="result-value" id="sqrtValue">0.000000</span>
+            </div>
+          </div>
+          <div class="result-row">
+            <div class="result-label">4. SQRT Sum</div>
+            <div class="result-value-container">
+              <span class="result-value" id="sqrtSum">0.105000</span>
+            </div>
+          </div>
+          <div class="result-row">
+            <div class="result-label">5. SQR</div>
+            <div class="result-value-container">
+              <span class="result-value" id="sqrValue">0.011025</span>
+            </div>
+          </div>
+          <div class="result-row">
+            <div class="result-label">6. Range</div>
+            <div class="result-value-container">
+              <span class="result-value" id="rangeValue">0.000000</span>
+              <div class="button-group">
+                <button class="btn btn-primary" onclick="divideRange()">÷2</button>
+                <button class="btn btn-secondary" onclick="resetRange()"><span id="multiplierDisplay">×1</span></button>
+                <button class="btn btn-primary" onclick="multiplyRange()">×2</button>
+              </div>
             </div>
           </div>
         </div>
-        
-        {/* SEO Content - Hidden but crawlable */}
-        <div className="sr-only" role="contentinfo">
-          <h2>Range Calculator - Professional Mathematical Computation Tool</h2>
-          <h3>Free Online Range Calculator for Mathematical Operations</h3>
-          <p>
-            Use our free range calculator to perform complex mathematical computations including square root calculations, 
-            coefficient operations, and range determinations. This professional tool is perfect for engineers, students, 
-            mathematicians, and anyone needing precise mathematical range calculations.
-          </p>
-          <h4>Features of Our Range Calculator:</h4>
-          <ul>
-            <li>Instant square root (SQRT) calculations</li>
-            <li>Coefficient (COF) integration at 0.105</li>
-            <li>SQRT Sum computation (SQRT + COF)</li>
-            <li>Square (SQR) of sum values</li>
-            <li>Automatic range calculation (SQR - Input)</li>
-            <li>Range multiplier and divider functions</li>
-            <li>Real-time calculation updates</li>
-            <li>Professional accuracy with 6 decimal precision</li>
-          </ul>
-          <h4>How to Use the Range Calculator:</h4>
-          <p>
-            Simply enter your input value, and the calculator automatically computes the square root, adds the coefficient, 
-            squares the sum, and calculates the range. Use the multiplier buttons to adjust the range value by factors of 2.
-          </p>
-          <h4>Applications:</h4>
-          <p>
-            This mathematical range calculator is ideal for statistical analysis, engineering calculations, data science, 
-            research projects, educational purposes, and professional mathematical computations requiring range determination.
-          </p>
-        </div>
       </div>
     </div>
-  );
-}
+  </div>
+  <script>
+    var COF = 0.105;
+    var rangeMultiplier = 1;
+    var baseRangeValue = 0;
+
+    function calculate() {
+      var inputValue = parseFloat(document.getElementById('inputValue').value) || 0;
+      var sqrtValue = Math.sqrt(inputValue);
+      var sqrtSum = sqrtValue + COF;
+      var sqrValue = Math.pow(sqrtSum, 2);
+      baseRangeValue = sqrValue - inputValue;
+      
+      document.getElementById('displayInput').textContent = inputValue.toFixed(6);
+      document.getElementById('sqrtValue').textContent = sqrtValue.toFixed(6);
+      document.getElementById('sqrtSum').textContent = sqrtSum.toFixed(6);
+      document.getElementById('sqrValue').textContent = sqrValue.toFixed(6);
+      
+      updateRangeDisplay();
+    }
+
+    function updateRangeDisplay() {
+      var adjustedRange = baseRangeValue * rangeMultiplier;
+      document.getElementById('rangeValue').textContent = adjustedRange.toFixed(6);
+      document.getElementById('multiplierDisplay').textContent = '×' + rangeMultiplier;
+    }
+
+    function multiplyRange() {
+      rangeMultiplier = rangeMultiplier * 2;
+      updateRangeDisplay();
+    }
+
+    function divideRange() {
+      rangeMultiplier = rangeMultiplier / 2;
+      updateRangeDisplay();
+    }
+
+    function resetRange() {
+      rangeMultiplier = 1;
+      updateRangeDisplay();
+    }
+
+    document.getElementById('inputValue').addEventListener('input', calculate);
+    calculate();
+  </script>
+</body>
+</html>
